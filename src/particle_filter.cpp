@@ -30,32 +30,37 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// Add random Gaussian noise to each particle.
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
 	
-	default_random_engine gen;
-	num_particles = 101;
-
-	// define normal distributions for sensor noise
-	normal_distribution<double> N_x_init(0, std[0]);
-	normal_distribution<double> N_y_init(0, std[1]);
-	normal_distribution<double> N_theta_init(0, std[2]);
-
-	// init particles
-	for (int i = 0; i < num_particles; i++) {
-		Particle p;
-		p.id = i;
-		p.x = x;
-		p.y = y;
-		p.theta = theta;
-		p.weight = 1.0;
-
-		// add noise
-		p.x += N_x_init(gen);
-		p.y += N_y_init(gen);
-		p.theta += N_theta_init(gen);
-
-		particles.push_back(p);
+  if (is_initialized) {
+    return;
   }
 
+  // Initializing the number of particles
+  num_particles = 100;
 
+  // Extracting standard deviations
+  double std_x = std[0];
+  double std_y = std[1];
+  double std_theta = std[2];
+
+  // Creating normal distributions
+  normal_distribution<double> dist_x(x, std_x);
+  normal_distribution<double> dist_y(y, std_y);
+  normal_distribution<double> dist_theta(theta, std_theta);
+
+  // Generate particles with normal distribution with mean on GPS values.
+	for (int i = 0; i < num_particles; i++) {
+
+    Particle particle;
+    particle.id = i;
+    particle.x = dist_x(gen);
+    particle.y = dist_y(gen);
+    particle.theta = dist_theta(gen);
+    particle.weight = 1.0;
+
+    particles.push_back(particle);
+  }
+
+  // The filter is now initialized.
   is_initialized = true;
 }
 
